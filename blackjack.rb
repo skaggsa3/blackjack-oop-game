@@ -253,5 +253,6 @@ class Game
   end
 end
 
+#game start
 g = Game.new('Adam')
 g.start_game

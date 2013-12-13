@@ -112,24 +112,6 @@ module Playable
     playing
   end
 
-  def player_print
-    puts "#{@name} has the following:"
-    @player.cards.each do |c|
-      puts "===> #{c.value} of #{c.suit}" 
-    end
-    puts "For a total of: #{@player_total}"
-    puts ""
-  end
-
-  def dealer_print 
-    puts "The Dealer has the following:"
-    @dealer.cards.each do |c|
-      puts "===> #{c.value} of #{c.suit}" 
-    end
-    puts "For a total of: #{@dealer_total}"
-    puts ""
-  end
-
   def print_dealing
     count = 0
     print "Dealing"
@@ -139,6 +121,25 @@ module Playable
       sleep(0.2)
     end
     print "\n"
+  end
+
+  def win_or_lost?(total)
+    if bust_or_win?(total) == 'win'
+      puts "You win!"
+      playing
+    elsif bust_or_win?(total) == 'lost'
+      puts "You lost"
+      playing
+    end
+  end
+
+  def playing
+    if play_again?
+      reset
+    else
+      puts "Great Game!"
+      exit
+    end
   end
 end
 
@@ -150,6 +151,15 @@ class Player
     @name = name
     @cards = []
   end
+
+  def player_print(total)
+    puts "#{@name} has the following:"
+    cards.each do |c|
+      puts "===> #{c.value} of #{c.suit}" 
+    end
+    puts "For a total of: #{total}"
+    puts ""
+  end
 end
 
 class Dealer
@@ -159,6 +169,15 @@ class Dealer
   def initialize(name='Dealer')
     @name = name
     @cards = []
+  end
+
+  def dealer_print(total)
+    puts "The Dealer has the following:"
+    cards.each do |c|
+      puts "===> #{c.value} of #{c.suit}" 
+    end
+    puts "For a total of: #{total}"
+    puts ""
   end
 end
 
@@ -190,49 +209,20 @@ class Game
     start_game
   end
 
-  def player_win_or_lost?
-    if bust_or_win?(@player_total) == 'win'
-      puts "You win!"
-      playing
-    elsif bust_or_win?(@player_total) == 'lost'
-      puts "You lost"
-      playing
-    end
-  end
-
-  def dealer_win_or_lost?
-    if bust_or_win?(@dealer_total) == 'win'
-      puts "You lost"
-      playing
-    elsif bust_or_win?(@dealer_total) == 'lost'
-      puts "You won!"
-      playing
-    end
-  end
-
-  def playing
-    if play_again?
-      reset
-    else
-      puts "Great Game!"
-      exit
-    end
-  end
-
   def start_game
     print_dealing
     @player.initial_cards(@deck)
     @dealer.initial_cards(@deck)
     total
-    player_print
-    dealer_print
-    player_win_or_lost?
-    dealer_win_or_lost?
+    @player.player_print(@player_total)
+    @dealer.dealer_print(@dealer_total)
+    win_or_lost?(@player_total)
+    win_or_lost?(@dealer_total)
 
     while @player.hit_or_stay?(@deck) == "hit"
       total
-      player_print
-      player_win_or_lost?
+      @player.player_print(@player_total)
+      win_or_lost?(@player_total)
     end
     puts ""
 
@@ -240,7 +230,7 @@ class Game
       puts "The dealer is drawing"
       @dealer.cards << @deck.deal
       total
-      dealer_print
+      @dealer.dealer_print(@dealer_total)
       if @dealer_total > @player_total && @dealer_total <= 21
         puts "You lost! Dealer now has #{@dealer_total}"
         playing
